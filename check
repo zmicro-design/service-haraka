@@ -1,0 +1,40 @@
+#!/bin/bash
+
+load inquirer
+
+check() {
+  if [ ! -f $SERVICE_CONFIG ]; then
+     touch $SERVICE_CONFIG
+  fi
+  config::load_file $SERVICE_CONFIG
+
+  if [ -z "$SERVICE_HARAKA_DOMAIN" ]; then
+    inquirer::text "请输入 SERVICE_HARAKA_DOMAIN:" value
+    config::set SERVICE_HARAKA_DOMAIN $value $SERVICE_CONFIG
+  fi
+
+  if [ -z "$SERVICE_HARAKA_USERNAME" ]; then
+    inquirer::text "请输入 SERVICE_HARAKA_USERNAME:" value
+    config::set SERVICE_HARAKA_USERNAME $value $SERVICE_CONFIG
+  fi
+
+   if [ -z "$SERVICE_HARAKA_PASSWORD" ]; then
+    inquirer::text "请输入 SERVICE_HARAKA_PASSWORD:" value
+    config::set SERVICE_HARAKA_PASSWORD $value $SERVICE_CONFIG
+  fi
+
+  if [ ! -f $SERVICE_HARAKA_SSL/privkey.pem ] || [ ! -f $SERVICE_HARAKA_SSL/fullchian.pem ]; then
+    log::error "[ingress] ssl privkey.pem and fullchain.pem are required in $SERVICE_HARAKA_SSL"
+    exit 1
+  fi
+
+  # load again
+  config::load_file $SERVICE_CONFIG
+  
+  # @TODO
+  export SERVICE_HARAKA_DOMAIN=$SERVICE_HARAKA_DOMAIN
+  export SERVICE_HARAKA_USERNAME=$SERVICE_HARAKA_USERNAME
+  export SERVICE_HARAKA_PASSWORD=$SERVICE_HARAKA_PASSWORD
+}
+
+check $@
